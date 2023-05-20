@@ -73,7 +73,7 @@ def main() -> None:
             text=True,
         )
         flake_input["locked"]["narHash"] = res.stdout.strip()
-        print(f"updated {inputname} to from {flake_input['locked']['rev']} to {rev}")
+        print(f"updated {inputname}:\n  {flake_input['locked']['rev']}\n  {rev}")
         flake_input["locked"]["rev"] = rev
     tmp = flake_lock.with_name("flake.lock.tmp")
     tmp.write_text(json.dumps(lock, indent=2, sort_keys=True) + "\n")
