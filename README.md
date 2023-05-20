@@ -51,9 +51,18 @@ Let's say you have a project with the following `flake.nix`:
 }
 ```
 
-Now you can quickly do some commits in your local nixpkgs fork that is located at `../nixpkgs`.
-Then you can update your project's flake.lock to the same commit like that:
+Now you can quickly do some commits in your local nixpkgs fork that is located
+at `../nixpkgs`. Then you can update your project's flake.lock to the same
+commit like that:
 
 ```
 fast-flake-update nixpkgs ../nixpkgs
+```
+
+## Installation
+
+You can run fast-flake-update like this from the repository:
+
+```
+nix run github:Mic92/fast-flake-update nixpkgs ../nixpkgs
 ```
