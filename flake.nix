@@ -9,17 +9,18 @@
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } ({ lib, ... }: {
-      systems = lib.systems.flakeExposed;
+  outputs = inputs:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [ "x86_64-linux" ];
+      imports = [ ./treefmt.nix ];
       perSystem = { pkgs, ... }: {
-        #imports = [ ./treefmt.nix ];
         packages.default = pkgs.python3.pkgs.buildPythonPackage {
+
           pname = "fast-flake-update";
           version = "0.1.0";
           src = ./.;
           doCheck = false;
         };
       };
-    });
+    };
 }
