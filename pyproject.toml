@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fast-flake-update"
+authors = [
+    { name = "Jörg Thalheim", email = "joerg@thalheim.io" },
+]
+description = "Update nix flake git/github inputs from local git repositories checkouts"
+readme = "README.rst"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Topic :: Utilities",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python"
+]
+version = "0.0.1"
+
+[project.scripts]
+fast-flake-update = "fast_flake_update:main"
