@@ -6,6 +6,7 @@
       projectRootFile = "flake.lock";
 
       programs.prettier.enable = true;
+      programs.mdsh.enable = true;
 
       settings.formatter = {
         prettier.options = [ "--prose-wrap" "always" ];

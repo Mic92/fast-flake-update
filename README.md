@@ -1,5 +1,7 @@
 # fast-flake-update
 
+> Written next to a pool in Mahalapye, Botswana.
+
 This tool improves the _efficiency_ of updating flake inputs in
 [nix](https://nixos.org) from local git repository checkouts.
 
@@ -12,3 +14,44 @@ especially slow for repositories like
 Additionally, it adds the checkout to the nix store. This approach allows for
 faster iterations when testing changes, significantly improving development
 efficiency.
+
+## Usage
+
+<!-- `$ python ./bin/fast-flake-update --help` -->
+
+```
+usage: fast-flake-update [-h] [--rev REV] inputname repo
+
+Update flake.lock with the latest commit of a local checkout
+
+positional arguments:
+  inputname   Name of the input in flake.lock to update
+  repo        Path to the local checkout
+
+options:
+  -h, --help  show this help message and exit
+  --rev REV   Revision to use
+```
+
+Example 
+
+```nix
+{
+  description = "Your flake with the nixpkgs input";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  };
+
+  outputs = { ... }; {
+    # ...
+  };
+}
+```
+
+Let's say you quickly do some commits in your local nixpkgs fork that is located at `../nixpkgs`,
+Than you can update your project's flake.lock to the same commit like that:
+
+```
+fast-flake-update nixpkgs ../nixpkgs
+```
