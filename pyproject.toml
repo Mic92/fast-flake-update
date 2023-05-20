@@ -24,3 +24,6 @@ version = "0.0.1"
 
 [project.scripts]
 fast-flake-update = "fast_flake_update:main"
+
+[tool.setuptools]
+packages = ["fast_flake_update"]
