@@ -33,7 +33,9 @@ def main() -> None:
             stdout=subprocess.PIPE,
         )
         rev = res.stdout.strip()
-        subprocess.run(["git", "-C", str(local_checkout), "archive", "-o", archive, rev])
+        subprocess.run(
+            ["git", "-C", str(local_checkout), "archive", "-o", archive, rev]
+        )
         res = subprocess.run(
             ["nix-prefetch-url", "--unpack", f"file://{archive}", "--name", "source"],
             stdout=subprocess.PIPE,
@@ -41,7 +43,12 @@ def main() -> None:
             check=True,
         )
         source_hash = res.stdout.strip()
-        res = subprocess.run(["nix", "hash", "to-sri", "--type", "sha256", source_hash], check=True, stdout=subprocess.PIPE, text=True)
+        res = subprocess.run(
+            ["nix", "hash", "to-sri", "--type", "sha256", source_hash],
+            check=True,
+            stdout=subprocess.PIPE,
+            text=True,
+        )
         flake_input["locked"]["narHash"] = res.stdout.strip()
         flake_input["locked"]["rev"] = rev
     tmp = flake_lock.with_name("flake.lock.tmp")

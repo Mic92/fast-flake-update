@@ -8,6 +8,8 @@
       programs.prettier.enable = true;
 
       settings.formatter = {
+        prettier.options = [ "--prose-wrap" "always" ];
+
         nix = {
           command = "sh";
           options = [
