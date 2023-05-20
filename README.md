@@ -33,7 +33,9 @@ options:
   --rev REV   Revision to use
 ```
 
-Example 
+## Example
+
+Let's say you have a project with the following `flake.nix`:
 
 ```nix
 {
@@ -43,14 +45,14 @@ Example
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { ... }; {
+  outputs = { ... }: {
     # ...
   };
 }
 ```
 
-Let's say you quickly do some commits in your local nixpkgs fork that is located at `../nixpkgs`,
-Than you can update your project's flake.lock to the same commit like that:
+Now you can quickly do some commits in your local nixpkgs fork that is located at `../nixpkgs`,
+Then you can update your project's flake.lock to the same commit like that:
 
 ```
 fast-flake-update nixpkgs ../nixpkgs
