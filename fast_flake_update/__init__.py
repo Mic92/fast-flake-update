@@ -57,8 +57,26 @@ def main() -> None:
 
         archive = Path(tmpdir) / "git-checkout.tar.gz"
         subprocess.run(
-            ["git", "-C", str(local_checkout), "archive", "-o", archive, rev]
+            ["git", "-C", str(local_checkout), "archive", "-o", archive, rev],
+            check=True,
         )
+        out = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(local_checkout),
+                "log",
+                "-1",
+                "--format=%ct",
+                "--no-show-signature",
+                "HEAD",
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            text=True,
+        )
+        last_modified = int(out.stdout.strip())
+
         res = subprocess.run(
             ["nix-prefetch-url", "--unpack", f"file://{archive}", "--name", "source"],
             stdout=subprocess.PIPE,
@@ -75,6 +93,7 @@ def main() -> None:
         flake_input["locked"]["narHash"] = res.stdout.strip()
         print(f"updated {inputname}:\n  {flake_input['locked']['rev']}\n  {rev}")
         flake_input["locked"]["rev"] = rev
+        flake_input["locked"]["lastModified"] = last_modified
     tmp = flake_lock.with_name("flake.lock.tmp")
     tmp.write_text(json.dumps(lock, indent=2, sort_keys=True) + "\n")
     tmp.rename(flake_lock)
