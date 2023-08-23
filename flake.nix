@@ -11,7 +11,7 @@
 
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [ "x86_64-linux" ];
+      systems = inputs.nixpkgs.lib.systems.flakeExposed;
       imports = [ ./treefmt.nix ];
       perSystem = { pkgs, ... }: {
         packages.default = pkgs.python3.pkgs.buildPythonPackage {
