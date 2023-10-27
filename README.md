@@ -15,6 +15,12 @@ Additionally, it adds the checkout to the nix store. This approach allows for
 faster iterations when testing changes, significantly improving development
 efficiency.
 
+This is conceptually similar to
+`nix flake lock --update-input inputA ~/code/inputA` but avoids the round-trip
+of pushing to a git remote, and then re-acquiring the git archive. Since this
+copies to the store, and uses the same archive format, it results in the same
+diff to `flake.lock`.
+
 ## Usage
 
 <!-- `$ python ./bin/fast-flake-update --help` -->
