@@ -55,9 +55,18 @@ def main() -> None:
             print(f"{inputname} already up to date")
             sys.exit(0)
 
-        archive = Path(tmpdir) / "git-checkout.tar.gz"
+        source = Path(tmpdir) / "source"
+
         subprocess.run(
-            ["git", "-C", str(local_checkout), "archive", "-o", archive, rev],
+            [
+                "git",
+                "-C",
+                local_checkout,
+                "checkout-index",
+                "-a",
+                "-f",
+                f"--prefix={source}/",
+            ],
             check=True,
         )
         out = subprocess.run(
@@ -78,19 +87,19 @@ def main() -> None:
         last_modified = int(out.stdout.strip())
 
         res = subprocess.run(
-            ["nix-prefetch-url", "--unpack", f"file://{archive}", "--name", "source"],
+            ["nix-store", "--add-fixed", "--recursive", "sha256", source],
             stdout=subprocess.PIPE,
             text=True,
             check=True,
         )
-        source_hash = res.stdout.strip()
+        store_path = res.stdout.strip()
         res = subprocess.run(
-            ["nix", "hash", "to-sri", "--type", "sha256", source_hash],
+            ["nix", "path-info", "--json", str(store_path)],
             check=True,
             stdout=subprocess.PIPE,
             text=True,
         )
-        flake_input["locked"]["narHash"] = res.stdout.strip()
+        flake_input["locked"]["narHash"] = json.loads(res.stdout)[0]["narHash"]
         print(f"updated {inputname}:\n  {flake_input['locked']['rev']}\n  {rev}")
         flake_input["locked"]["rev"] = rev
         flake_input["locked"]["lastModified"] = last_modified
