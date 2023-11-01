@@ -4,6 +4,7 @@ import argparse
 import json
 import subprocess
 import sys
+import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -56,18 +57,23 @@ def main() -> None:
             sys.exit(0)
 
         source = Path(tmpdir) / "source"
+        source.mkdir()
+
+        env = os.environ.copy()
+        env["GIT_WORK_TREE"] = str(source)
 
         subprocess.run(
             [
                 "git",
                 "-C",
                 local_checkout,
-                "checkout-index",
-                "-a",
+                "checkout",
                 "-f",
-                f"--prefix={source}/",
+                rev,
             ],
             check=True,
+            cwd=source,
+            env=env,
         )
         out = subprocess.run(
             [
@@ -78,7 +84,7 @@ def main() -> None:
                 "-1",
                 "--format=%ct",
                 "--no-show-signature",
-                "HEAD",
+                rev,
             ],
             check=True,
             stdout=subprocess.PIPE,
