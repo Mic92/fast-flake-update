@@ -1,4 +1,4 @@
-{ inputs, ... }: {
+{ lib, inputs, ... }: {
   imports = [ inputs.treefmt-nix.flakeModule ];
   perSystem = { pkgs, ... }: {
     treefmt = {
@@ -40,8 +40,8 @@
           options = [
             "-eucx"
             ''
-              ${pkgs.lib.getExe pkgs.ruff} --fix "$@"
-              ${pkgs.lib.getExe pkgs.python3.pkgs.black} "$@"
+              ${lib.getExe pkgs.ruff} --fix "$@"
+              ${lib.getExe pkgs.ruff} format "$@"
             ''
             "--" # this argument is ignored by bash
           ];
