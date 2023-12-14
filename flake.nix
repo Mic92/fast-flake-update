@@ -13,14 +13,25 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = inputs.nixpkgs.lib.systems.flakeExposed;
       imports = [ ./treefmt.nix ];
-      perSystem = { pkgs, ... }: {
-        packages.default = pkgs.python3.pkgs.buildPythonPackage {
-
+      perSystem = { config, self', pkgs, lib, ... }: {
+        packages.fast-flake-update = pkgs.python3.pkgs.buildPythonPackage {
           pname = "fast-flake-update";
           version = "0.1.0";
           src = ./.;
+          makeWrapperArgs = [
+            "--prefix PATH : ${pkgs.lib.makeBinPath [
+              pkgs.git pkgs.nixVersions.nix_2_19
+            ]}"
+          ];
           doCheck = false;
         };
+        packages.default = config.packages.fast-flake-update;
+        checks =
+          let
+            packages = lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self'.packages;
+            devShells = lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells;
+          in
+          packages // devShells;
       };
     };
 }
