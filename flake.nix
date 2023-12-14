@@ -11,7 +11,14 @@
 
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = inputs.nixpkgs.lib.systems.flakeExposed;
+      systems = [
+        "aarch64-linux"
+        "x86_64-linux"
+        "riscv64-linux"
+
+        "aarch64-darwin"
+        "x86_64-darwin"
+      ];
       imports = [ ./treefmt.nix ];
       perSystem = { config, self', pkgs, lib, ... }: {
         packages.fast-flake-update = pkgs.python3.pkgs.buildPythonPackage {
