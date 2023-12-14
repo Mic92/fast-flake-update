@@ -105,7 +105,9 @@ def main() -> None:
             stdout=subprocess.PIPE,
             text=True,
         )
-        flake_input["locked"]["narHash"] = json.loads(res.stdout)[0]["narHash"]
+        data = json.loads(res.stdout)
+        store_path = next(iter(data.keys()))
+        flake_input["locked"]["narHash"] = data[store_path]["narHash"]
         print(f"updated {inputname}:\n  {flake_input['locked']['rev']}\n  {rev}")
         flake_input["locked"]["rev"] = rev
         flake_input["locked"]["lastModified"] = last_modified
