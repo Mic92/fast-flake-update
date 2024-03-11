@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -57,24 +56,22 @@ def main() -> None:
             sys.exit(0)
 
         source = Path(tmpdir) / "source"
-        source.mkdir()
-
-        env = os.environ.copy()
-        env["GIT_WORK_TREE"] = str(source)
 
         subprocess.run(
             [
                 "git",
                 "-C",
                 local_checkout,
-                "checkout",
-                "-f",
+                "worktree",
+                "add",
+                "-d",
+                source,
                 rev,
             ],
             check=True,
-            cwd=source,
-            env=env,
+            cwd=local_checkout,
         )
+
         out = subprocess.run(
             [
                 "git",
@@ -99,6 +96,20 @@ def main() -> None:
             check=True,
         )
         store_path = res.stdout.strip()
+
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                local_checkout,
+                "worktree",
+                "remove",
+                source,
+            ],
+            check=True,
+            cwd=local_checkout,
+        )
+
         res = subprocess.run(
             ["nix", "path-info", "--json", str(store_path)],
             check=True,
