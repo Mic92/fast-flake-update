@@ -2,11 +2,12 @@
 
 import argparse
 import json
-import os
 import subprocess
 import sys
+from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Iterator
 
 
 def parse_args() -> argparse.Namespace:
@@ -29,6 +30,43 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+@contextmanager
+def worktree(local_checkout: Path, rev: str) -> Iterator[Path]:
+    with TemporaryDirectory() as tmpdir:
+        source = Path(tmpdir) / "source"
+
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                local_checkout,
+                "worktree",
+                "add",
+                "-d",
+                source,
+                rev,
+            ],
+            check=True,
+            cwd=local_checkout,
+        )
+
+        try:
+            yield source
+        finally:
+            subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    local_checkout,
+                    "worktree",
+                    "remove",
+                    source,
+                ],
+                check=True,
+                cwd=local_checkout,
+            )
+
+
 def main() -> None:
     args = parse_args()
     inputname = args.inputname
@@ -44,54 +82,36 @@ def main() -> None:
         print(f"input {inputname} not found in flake.lock")
         print(f"available inputs: {lock['nodes'].keys()}")
         sys.exit(1)
-    with TemporaryDirectory() as tmpdir:
-        res = subprocess.run(
-            ["git", "-C", str(local_checkout), "rev-parse", args.rev],
-            check=True,
-            text=True,
-            stdout=subprocess.PIPE,
-        )
-        rev = res.stdout.strip()
-        if rev == flake_input["locked"]["rev"]:
-            print(f"{inputname} already up to date")
-            sys.exit(0)
+    res = subprocess.run(
+        ["git", "-C", str(local_checkout), "rev-parse", args.rev],
+        check=True,
+        text=True,
+        stdout=subprocess.PIPE,
+    )
+    rev = res.stdout.strip()
+    if rev == flake_input["locked"]["rev"]:
+        print(f"{inputname} already up to date")
+        sys.exit(0)
 
-        source = Path(tmpdir) / "source"
-        source.mkdir()
+    out = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(local_checkout),
+            "log",
+            "-1",
+            "--format=%ct",
+            "--no-show-signature",
+            rev,
+        ],
+        check=True,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+    last_modified = int(out.stdout.strip())
 
-        env = os.environ.copy()
-        env["GIT_WORK_TREE"] = str(source)
-
-        subprocess.run(
-            [
-                "git",
-                "-C",
-                local_checkout,
-                "checkout",
-                "-f",
-                rev,
-            ],
-            check=True,
-            cwd=source,
-            env=env,
-        )
-        out = subprocess.run(
-            [
-                "git",
-                "-C",
-                str(local_checkout),
-                "log",
-                "-1",
-                "--format=%ct",
-                "--no-show-signature",
-                rev,
-            ],
-            check=True,
-            stdout=subprocess.PIPE,
-            text=True,
-        )
-        last_modified = int(out.stdout.strip())
-
+    store_path = None
+    with worktree(local_checkout, rev) as source:
         res = subprocess.run(
             ["nix-store", "--add-fixed", "--recursive", "sha256", source],
             stdout=subprocess.PIPE,
@@ -99,18 +119,20 @@ def main() -> None:
             check=True,
         )
         store_path = res.stdout.strip()
-        res = subprocess.run(
-            ["nix", "path-info", "--json", str(store_path)],
-            check=True,
-            stdout=subprocess.PIPE,
-            text=True,
-        )
-        data = json.loads(res.stdout)
-        store_path = next(iter(data.keys()))
-        flake_input["locked"]["narHash"] = data[store_path]["narHash"]
-        print(f"updated {inputname}:\n  {flake_input['locked']['rev']}\n  {rev}")
-        flake_input["locked"]["rev"] = rev
-        flake_input["locked"]["lastModified"] = last_modified
+
+    res = subprocess.run(
+        ["nix", "path-info", "--json", str(store_path)],
+        check=True,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+    data = json.loads(res.stdout)
+    store_path = next(iter(data.keys()))
+    flake_input["locked"]["narHash"] = data[store_path]["narHash"]
+    print(f"updated {inputname}:\n  {flake_input['locked']['rev']}\n  {rev}")
+    flake_input["locked"]["rev"] = rev
+    flake_input["locked"]["lastModified"] = last_modified
+
     tmp = flake_lock.with_name("flake.lock.tmp")
     tmp.write_text(json.dumps(lock, indent=2, sort_keys=True) + "\n")
     tmp.rename(flake_lock)
