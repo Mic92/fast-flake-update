@@ -11,7 +11,6 @@
         programs.prettier.enable = true;
 
         programs.nixfmt.enable = lib.meta.availableOn pkgs.stdenv.buildPlatform pkgs.nixfmt-rfc-style.compiler;
-        programs.nixfmt.package = pkgs.nixfmt-rfc-style;
 
         programs.deadnix.enable = true;
         programs.ruff.check = true;
