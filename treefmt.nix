@@ -10,7 +10,7 @@
 
         programs.prettier.enable = true;
 
-        programs.nixfmt.enable = lib.meta.availableOn pkgs.stdenv.buildPlatform pkgs.nixfmt-rfc-style.compiler;
+        programs.nixfmt.enable = pkgs.stdenv.hostPlatform.system != "riscv64-linux";
 
         programs.deadnix.enable = true;
         programs.ruff.check = true;
