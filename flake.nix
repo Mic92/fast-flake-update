@@ -38,7 +38,7 @@
               "--prefix PATH : ${
                 pkgs.lib.makeBinPath [
                   pkgs.git
-                  pkgs.nixVersions.nix_2_19
+                  pkgs.nix
                 ]
               }"
             ];
