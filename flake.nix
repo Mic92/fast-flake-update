@@ -33,7 +33,9 @@
           packages.fast-flake-update = pkgs.python3.pkgs.buildPythonPackage {
             pname = "fast-flake-update";
             version = "0.1.0";
+            pyproject = true;
             src = ./.;
+            build-system = [ pkgs.python3.pkgs.setuptools ];
             makeWrapperArgs = [
               "--prefix PATH : ${
                 pkgs.lib.makeBinPath [
