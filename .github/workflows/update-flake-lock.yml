@@ -1,21 +1,20 @@
-name: update-flake-lock
+name: Update Flake Inputs
 on:
-  workflow_dispatch: # allows manual triggering
   schedule:
     - cron: "0 0 * * 1,4" # Run twice a week
+  workflow_dispatch:
 permissions:
-  pull-requests: write
   contents: write
+  pull-requests: write
 jobs:
-  lockfile:
+  update-flake-inputs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
       - name: Install Nix
         uses: cachix/install-nix-action@v31
-      - name: Update flake.lock
-        uses: DeterminateSystems/update-flake-lock@v27
+      - name: Update flake inputs
+        uses: mic92/update-flake-inputs@main
         with:
-          pr-labels: | # Labels to be set on the PR
-            merge-queue
+          auto-merge: true
